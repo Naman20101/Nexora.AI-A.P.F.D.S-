@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import joblib
@@ -17,7 +16,7 @@ class Transaction(BaseModel):
 @app.post("/predict")
 def predict(transaction: Transaction):
     # For demo: dummy encoding
-    X = np.array([[transaction.amount]])
-    prediction = model.predict(X)
+    x = np.array([[transaction.amount]])
+    prediction = model.predict(x)
     result = "Fraud" if prediction[0] == 1 else "Safe"
     return {"prediction": result}
