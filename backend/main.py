@@ -26,3 +26,14 @@ def predict(transaction: Transaction):
     prediction = model.predict(x)
     result = "Fraud" if prediction[0] == 1 else "Safe"
     return {"prediction": result}
+
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    return """
+    <h1>Nexora.ai — A.P.F.D.S</h1>
+    <p>Welcome to the AI-Powered Fraud Detection System.</p>
+    <p>Visit <a href='/docs'>/docs</a> to test the API.</p>
+    """
+
