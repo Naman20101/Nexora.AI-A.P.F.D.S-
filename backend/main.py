@@ -1,21 +1,27 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-import joblib
 import numpy as np
+import pickle
 
 app = FastAPI()
 
-# Load model (make sure model.pkl is present)
-model = joblib.load("model.pkl")
+# Load the trained model
+with open("model.pkl", "rb") as f:
+    model = pickle.load(f)
 
+# Input schema
 class Transaction(BaseModel):
     amount: float
     location: str
     time: str
 
-@app.post("/predict")
+# Output schema
+class PredictionResponse(BaseModel):
+    prediction: str
+
+@app.post("/predict", response_model=PredictionResponse)
 def predict(transaction: Transaction):
-    # For demo: dummy encoding
+    # Dummy encoding — modify as per real feature logic
     x = np.array([[transaction.amount]])
     prediction = model.predict(x)
     result = "Fraud" if prediction[0] == 1 else "Safe"
