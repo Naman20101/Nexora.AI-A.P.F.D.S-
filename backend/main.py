@@ -30,10 +30,20 @@ def predict(transaction: Transaction):
 from fastapi.responses import HTMLResponse
 
 @app.get("/", response_class=HTMLResponse)
-def read_root():
+def home():
     return """
-    <h1>Nexora.ai — A.P.F.D.S</h1>
-    <p>Welcome to the AI-Powered Fraud Detection System.</p>
-    <p>Visit <a href='/docs'>/docs</a> to test the API.</p>
+    <html>
+        <head>
+            <title>Nexora.ai – Fraud Detection</title>
+        </head>
+        <body style="font-family: Arial; text-align: center; padding-top: 50px;">
+            <h1>🛡️ Nexora.ai – A.P.F.D.S</h1>
+            <p>Welcome to our AI-powered fraud detection system.</p>
+            <a href="/docs" style="font-size: 18px; color: blue;">Visit API Documentation</a>
+        </body>
+    </html>
     """
+
+
+
 
