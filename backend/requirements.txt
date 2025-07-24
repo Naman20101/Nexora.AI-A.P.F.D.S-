@@ -1,3 +1,5 @@
+setuptools>=42
+wheel
 fastapi==0.116.1
 uvicorn==0.35.0
 pydantic==2.11.1
