@@ -1,34 +1,58 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
 import numpy as np
 import pickle
+import datetime
+import os
 
-app = FastAPI()
+app = FastAPI(title="Nexora.ai – A.P.F.D.S", description="AI-powered fraud detection system", version="1.0")
+
+# Check if model exists
+MODEL_PATH = "model.pkl"
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError("model.pkl not found. Make sure it's included in the deployment.")
 
 # Load the trained model
-with open("model.pkl", "rb") as f:
+with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
 
 # Input schema
 class Transaction(BaseModel):
     amount: float
     location: str
-    time: str
+    time: str  # e.g., "2025-07-23 10:00:00"
 
 # Output schema
 class PredictionResponse(BaseModel):
     prediction: str
 
+# Preprocessing function
+def preprocess(transaction: Transaction):
+    try:
+        # Example encoding: location (Dubai = 1, others = 0)
+        location_encoded = 1 if transaction.location.lower() == "dubai" else 0
+
+        # Extract hour from time
+        time_obj = datetime.datetime.strptime(transaction.time, "%Y-%m-%d %H:%M:%S")
+        hour = time_obj.hour
+
+        return np.array([[transaction.amount, location_encoded, hour]])
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {e}")
+
+# Prediction endpoint
 @app.post("/predict", response_model=PredictionResponse)
 def predict(transaction: Transaction):
-    # Dummy encoding — modify as per real feature logic
-    x = np.array([[transaction.amount]])
-    prediction = model.predict(x)
-    result = "Fraud" if prediction[0] == 1 else "Safe"
-    return {"prediction": result}
+    x = preprocess(transaction)
+    try:
+        prediction = model.predict(x)
+        result = "Fraud" if prediction[0] == 1 else "Safe"
+        return {"prediction": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Model error: {e}")
 
-from fastapi.responses import HTMLResponse
-
+# Home route (Frontend landing)
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
@@ -43,7 +67,6 @@ def home():
         </body>
     </html>
     """
-
 
 
 
